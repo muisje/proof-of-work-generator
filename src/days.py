@@ -3,6 +3,7 @@ from jira import JIRA
 import datetime
 
 starting_date = datetime.datetime.fromisoformat('2020-05-18T14:00:00.000+0200'.split('+')[0])
+amount_of_days = 7
 
 jira = JIRA(jira_server, auth=(jira_username, jira_password))
 
@@ -12,7 +13,7 @@ file.write('# Log week 0\n\n')
 
 dates = list()
 dates.append(starting_date)
-for i in range(6): 
+for i in range(amount_of_days - 1): 
     dates.append(dates[-1] + datetime.timedelta(days=1))
 
 markdown_table_header = '| Hours | Task | With whom | Results | Link |'
@@ -22,7 +23,6 @@ for date in dates:
     file.write('## ' + date.strftime('%A'))
     markdown_table_lines = list()
     for issue in jira.search_issues('(assignee = ' + jira_user_export + ' OR "Assignee\'s" = ' + jira_user_export + ' OR Reviewers = ' + jira_user_export + ' OR worklogAuthor = ' + jira_user_export + ') AND worklogDate = ' + str(date.date()) + ' order by updated', 
-    fields="id,key,summary,worklog,assignee,customfield_10201,issuetype,customfield_10204"):
         total_time_spent_seconds = 0
         markdown_worklog_comment = ''
         try:
