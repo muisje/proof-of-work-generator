@@ -2,7 +2,7 @@ from config import *
 from jira import JIRA
 import datetime
 
-starting_date = datetime.datetime.fromisoformat('2020-05-18T14:00:00.000+0200'.split('+')[0])
+starting_date = datetime.datetime.fromisoformat('2020-05-25T14:00:00.000+0200'.split('+')[0])
 amount_of_days = 7
 
 jira = JIRA(jira_server, auth=(jira_username, jira_password))
@@ -26,14 +26,12 @@ for date in dates:
     fields="id,key,summary,worklog,assignee,customfield_10201,issuetype,customfield_10204"):
         total_time_spent_seconds = 0
         markdown_worklog_comment = ''
-        try:
-            for worklog in issue.fields.worklog.worklogs:
-                if worklog.author.name == jira_user_export:
-                    if datetime.datetime.fromisoformat(worklog.started.split('+')[0]).date() == date.date():
-                        total_time_spent_seconds += worklog.timeSpentSeconds
-                        markdown_worklog_comment += worklog.comment.replace("\n", "<br>").replace("\r","<br>").replace("|"," ") + '<br><br>' #TODO some regex or something to handle links etc.
-        except:
-            print('worklog error')
+
+        for worklog in jira.worklogs(issue.id):
+            if worklog.author.name == jira_user_export:
+                if datetime.datetime.fromisoformat(worklog.started.split('+')[0]).date() == date.date():
+                    total_time_spent_seconds += worklog.timeSpentSeconds
+                    markdown_worklog_comment += worklog.comment.replace("\n", "<br>").replace("\r","<br>").replace("|"," ") + '<br><br>' #TODO some regex or something to handle links etc.
 
         if total_time_spent_seconds == 0:
             continue;
