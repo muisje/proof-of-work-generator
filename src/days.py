@@ -23,6 +23,7 @@ for date in dates:
     file.write('## ' + date.strftime('%A'))
     markdown_table_lines = list()
     for issue in jira.search_issues('(assignee = ' + jira_user_export + ' OR "Assignee\'s" = ' + jira_user_export + ' OR Reviewers = ' + jira_user_export + ' OR worklogAuthor = ' + jira_user_export + ') AND worklogDate = ' + str(date.date()) + ' order by updated', 
+    fields="id,key,summary,worklog,assignee,customfield_10201,issuetype,customfield_10204"):
         total_time_spent_seconds = 0
         markdown_worklog_comment = ''
         try:
