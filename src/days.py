@@ -7,6 +7,26 @@ amount_of_days = 7
 
 jira = JIRA(jira_server, auth=(jira_username, jira_password))
 
+members = jira.search_users('.')
+
+def get_assignees_from_comment(comment):
+    assignees = dict()
+    for member in members:
+        if comment.find(member.displayName) != -1:
+            assignees[member.name] = member.displayName 
+    return assignees
+
+def correct_users_in_comment(comment):
+    new_comment = comment
+    for member in members:
+        new_comment = new_comment.replace('[~' + member.name + ']', member.displayName)
+    return new_comment
+    
+def merge_two_dicts(x, y):
+    z = x.copy()   # start with x's keys and values
+    z.update(y)    # modifies z with y's keys and values & returns None
+    return z
+
 file = open('log_week_0.md','w') 
 
 file.write('# Log week 0\n\n')
@@ -27,16 +47,19 @@ for date in dates:
         total_time_spent_seconds = 0
         markdown_worklog_comment = ''
 
+
         for worklog in jira.worklogs(issue.id):
             if worklog.author.name == jira_user_export:
                 if datetime.datetime.fromisoformat(worklog.started.split('+')[0]).date() == date.date():
                     total_time_spent_seconds += worklog.timeSpentSeconds
                     markdown_worklog_comment += worklog.comment.replace("\n", "<br>").replace("\r","<br>").replace("|"," ") + '<br><br>' #TODO some regex or something to handle links etc.
-
         if total_time_spent_seconds == 0:
             continue;
 
+        markdown_worklog_comment = correct_users_in_comment(markdown_worklog_comment)
+
         assignees = dict()
+        assignees = merge_two_dicts(assignees, get_assignees_from_comment(markdown_worklog_comment))
 
 
         if issue.fields.assignee is not None:
