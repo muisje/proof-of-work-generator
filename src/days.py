@@ -1,4 +1,4 @@
-from Wconfig import *
+from config import *
 from jira import JIRA
 import datetime
 
