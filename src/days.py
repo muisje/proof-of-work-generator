@@ -1,4 +1,4 @@
-from Wconfig import *
+from config import *
 from jira import JIRA
 import datetime
 
@@ -27,14 +27,36 @@ def merge_two_dicts(x, y):
     z.update(y)    # modifies z with y's keys and values & returns None
     return z
 
-def correct_gif_in_comment(comment):
-    start_location = comment.find('!https://i.imgur.com/')
+def correct_image_in_comment(comment):
+    start_location = comment.find('!https://')
     if start_location != -1:
         end_location = comment.find('!', start_location + 1)
-        return comment[:start_location] + '![gif](' + comment[start_location+1:end_location] + ')' + comment[end_location + 1:]
-        # should do this recursivly.
+        return correct_image_in_comment(comment[:start_location] + '![img](' + comment[start_location+1:end_location] + ')' + comment[end_location + 1:])
     return comment
 
+def correct_link_in_comment(comment):
+    sep_location = comment.find('|')
+    if sep_location != -1:
+        start_location = comment.rfind('[',0, sep_location)
+        end_location = comment.find(']', sep_location)
+        return correct_link_in_comment(comment[:start_location] + '[' + comment[start_location+1:sep_location] + '](' + comment[sep_location+1:end_location] + ')'+ comment[end_location + 1:])
+    return comment
+
+def correct_youtube_video_in_comment(comment):
+    start_location = comment.find('https://youtu.be/')
+    if start_location != -1:
+        id_start_location = start_location+ len('https://youtu.be/')
+        count = 0
+        for char in comment[id_start_location:]:
+            if char.isalpha() or char.isnumeric():
+                count += 1 
+            else:
+                break
+        end_location = id_start_location + count
+        youtube_id = comment[id_start_location : end_location]
+        # Should check if there was already a description for the link.
+        return correct_youtube_video_in_comment(comment[:start_location] + ' [![youtube video](http://img.youtube.com/vi/' + youtube_id + '/0.jpg)](http://www.youtube.com/watch?v=' + youtube_id + ') ' + comment[end_location:])
+    return comment
 
 file = open('log_week_0.md','w') 
 
@@ -60,12 +82,14 @@ for date in dates:
             if worklog.author.name == jira_user_export:
                 if datetime.datetime.fromisoformat(worklog.started.split('+')[0]).date() == date.date():
                     total_time_spent_seconds += worklog.timeSpentSeconds
-                    markdown_worklog_comment += worklog.comment.replace("\n", "<br>").replace("\r",'').replace("|"," ") + '<br><br>' #TODO some regex or something to handle links etc.
+                    markdown_worklog_comment += worklog.comment.replace("\n", "<br>").replace("\r",'') + '<br><br>' #TODO some regex or something to handle links etc.
         if total_time_spent_seconds == 0:
             continue;
 
+        markdown_worklog_comment = correct_link_in_comment(markdown_worklog_comment)
         markdown_worklog_comment = correct_users_in_comment(markdown_worklog_comment)
-        markdown_worklog_comment = correct_gif_in_comment(markdown_worklog_comment)
+        markdown_worklog_comment = correct_image_in_comment(markdown_worklog_comment)
+        markdown_worklog_comment = correct_youtube_video_in_comment(markdown_worklog_comment)
 
         assignees = dict()
         assignees = merge_two_dicts(assignees, get_assignees_from_comment(markdown_worklog_comment))
