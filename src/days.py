@@ -1,4 +1,4 @@
-from config import *
+from Wconfig import *
 from jira import JIRA
 import datetime
 
@@ -49,7 +49,6 @@ markdown_table_header = '| Hours | Task | With whom | Results | Link |'
 markdown_table_header_seperator = '|---|---|---|---|---|'
 
 for date in dates:
-    file.write('## ' + date.strftime('%A'))
     markdown_table_lines = list()
     for issue in jira.search_issues('(assignee = ' + jira_user_export + ' OR "Assignee\'s" = ' + jira_user_export + ' OR Reviewers = ' + jira_user_export + ' OR worklogAuthor = ' + jira_user_export + ') AND worklogDate = ' + str(date.date()) + ' order by updated', 
     fields="id,key,summary,worklog,assignee,customfield_10201,issuetype,customfield_10204"):
@@ -96,8 +95,12 @@ for date in dates:
         markdown_table_line = '| ' + str(datetime.timedelta(seconds=total_time_spent_seconds)) +  ' | ' + task +  ' | ' + markdown_with_whom  +  ' | ' + markdown_worklog_comment +  ' | ' + link  +  ' |'
         markdown_table_lines.append(markdown_table_line)
     markdown_table = markdown_table_header + '\n' + markdown_table_header_seperator + '\n'
+    if not markdown_table_lines:
+        break;
+
     for markdown_table_line in markdown_table_lines:
         markdown_table += markdown_table_line + '\n'
+    file.write('## ' + date.strftime('%A'))
     file.write('\n\n')
     file.write (markdown_table)
     file.write('\n')
