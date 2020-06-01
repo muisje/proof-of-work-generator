@@ -5,8 +5,8 @@ I made this because the proof of work we need to provide is required in a specif
 ## Depencies
 
 * python3
-* jira
-* (python-gitlab)[https://github.com/python-gitlab/python-gitlab/tree/22d4b465c3217536cb444dafe5c25e9aaa3aa7be]
+* [jira](https://github.com/pycontribs/jira)
+* [python-gitlab](https://github.com/python-gitlab/python-gitlab/tree/22d4b465c3217536cb444dafe5c25e9aaa3aa7be)
 
 ## Config
 
