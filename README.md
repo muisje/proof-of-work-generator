@@ -2,7 +2,7 @@
 
 I made this because the proof of work we need to provide is required in a specific format for a school project. Doing it manually sucks.
 
-## Depencies
+## Dependencies
 
 * python3
 * [jira](https://github.com/pycontribs/jira)
