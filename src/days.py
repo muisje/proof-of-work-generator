@@ -1,6 +1,7 @@
 from config import *
 from jira import JIRA
 import datetime
+import requests
 
 starting_date = datetime.datetime.fromisoformat('2020-05-25T14:00:00.000+0200'.split('+')[0])
 amount_of_days = 7
@@ -31,8 +32,14 @@ def correct_image_in_comment(comment):
     start_location = comment.find('!https://')
     if start_location != -1:
         end_location = comment.find('!', start_location + 1)
-        return correct_image_in_comment(comment[:start_location] + '![img](' + comment[start_location+1:end_location] + ')' + comment[end_location + 1:])
+        return correct_image_in_comment(comment[:start_location] + '![img](' + download(comment[start_location+1:end_location]) + ')' + comment[end_location + 1:])
     return comment
+
+def download(uri, path = 'img/'):
+    name = uri[uri.rfind('/'):]
+    with open('img/' + name, 'wb') as f:
+        f.write(requests.get(uri).content)
+    return path + name
 
 def correct_link_in_comment(comment):
     sep_location = comment.find('|')
